@@ -1,0 +1,3 @@
+id,nome,email,idade,erros
+3,João Santos,,22,email vazio
+4,Maria Souza,maria@email.com,15,idade menor que 16
