@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS matriculas;
+DROP TABLE IF EXISTS cursos;
+DROP TABLE IF EXISTS alunos;
