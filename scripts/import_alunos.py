@@ -1,35 +1,6 @@
 import csv
 from pathlib import Path
-
-def normalizar_aluno(linha:dict) -> dict:
-    return {
-        "id": (linha.get("id") or "").strip(),
-        "nome": " ".join(((linha.get("nome") or "").strip()).split()),
-        "email": ((linha.get("email") or "").strip()).lower(),
-        "idade": (linha.get("idade") or "").strip(),
-    }
-
-def validar_aluno(linha: dict) -> list[str]:
-    erros = []
-
-    # 1)email obrigatório
-    email = (linha.get("email") or "").strip()
-    if not email:
-        erros.append("email vazio")
-
-    # 2) idade obrigatória, numérica e >=16
-    idade_texto = (linha.get("idade") or "").strip()
-    if not idade_texto:
-        erros.append("idade vazia")
-    else:
-        try:
-            idade = int(idade_texto)
-            if idade < 16:
-                erros.append("idade menor que 16")
-        except ValueError:
-            erros.append("idade não é um número")
-
-    return erros
+from core.alunos import normalizar_aluno, validar_aluno
 
 def main():
     caminho_csv = Path("data") / "alunos.csv"
