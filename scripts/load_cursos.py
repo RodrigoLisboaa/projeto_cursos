@@ -1,11 +1,11 @@
 import csv
 from pathlib import Path
 
-from core.alunos import normalizar_aluno, validar_aluno
+from core.cursos import normalizar_curso, validar_curso
 from db.connection import get_connection
 
 def main() -> None:
-    caminho_csv = Path("data") / "alunos.csv"
+    caminho_csv = Path("data") / "cursos.csv"
     if not caminho_csv.exists():
         raise FileNotFoundError(f"CSV não encontrado: {caminho_csv}")
     
@@ -15,8 +15,8 @@ def main() -> None:
     with caminho_csv.open(mode="r", encoding="utf-8", newline="") as f:
         leitor = csv.DictReader(f)
         for linha in leitor:
-            linha = normalizar_aluno(linha)
-            erros = validar_aluno(linha)
+            linha = normalizar_curso(linha)
+            erros = validar_curso(linha)
 
             if erros:
                 invalidos.append((linha, erros))
@@ -26,29 +26,28 @@ def main() -> None:
     inserted = 0
     with get_connection() as conn:
         with conn.cursor() as cur:
-            for aluno in validos:
+            for curso in validos:
                 cur.execute(
                     """
-                    INSERT INTO alunos (id, nome, email, idade)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO cursos (id, nome, ativo)
+                    VALUES (%s, %s, %s)
                     ON CONFLICT (id) DO NOTHING
                     RETURNING id
                     """,
                     (
-                        int(aluno["id"]),
-                        aluno["nome"],
-                        aluno["email"],
-                        int(aluno["idade"]),
+                        int(curso["id"]),
+                        curso["nome"],
+                        curso["ativo"] == "true",
                     ),
                 )
                 if cur.fetchone() is not None:
                     inserted += 1
 
     for linha, erros in invalidos:
-        print(f"Aluno ID {linha.get('id')} ({linha.get('nome')}) inválido: {', '.join(erros)}")
+        print(f"Curso ID {linha.get('id')} ({linha.get('nome')}) inválido: {', '.join(erros)}")
 
     print(f"\nInseridos no banco: {inserted}")
     print(f"Inválidos no CSV: {len(invalidos)}")
 
 if __name__ == "__main__":
-    main()            
+    main()

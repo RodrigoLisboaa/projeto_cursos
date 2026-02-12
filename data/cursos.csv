@@ -1,0 +1,4 @@
+id,nome,ativo
+1,Python Básico,true
+2,SQL para Dados,true
+3,Django Web,false
