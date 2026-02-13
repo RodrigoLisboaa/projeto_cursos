@@ -6,7 +6,7 @@ load_dotenv()
 CSV_DIR = os.getenv("CSV_DIR", "data")
 
 PGHOST = os.getenv("PGHOST", "localhost")
-PGPORT = int(os.getenv("PGPORT", 5432))
+PGPORT = int(os.getenv("PGPORT", "5432"))
 PGDATABASE = os.getenv("PGDATABASE", "mentoria_dev")
 PGUSER = os.getenv("PGUSER", "postgres")
 PGPASSWORD = os.getenv("PGPASSWORD", "")
@@ -15,3 +15,5 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL",
     f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}",
 )
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
