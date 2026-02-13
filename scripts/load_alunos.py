@@ -1,9 +1,13 @@
 import csv
 from pathlib import Path
+import logging
+logger = logging.getLogger(__name__)
+
 
 from config import CSV_DIR
 from core.alunos import normalizar_aluno, validar_aluno
 from db.connection import get_connection
+
 
 def main() -> None:
     caminho_csv = Path(CSV_DIR) / "alunos.csv"
@@ -46,10 +50,15 @@ def main() -> None:
                     inserted += 1
 
     for linha, erros in invalidos:
-        print(f"Aluno ID {linha.get('id')} ({linha.get('nome')}) inválido: {', '.join(erros)}")
+        logger.warning(
+            "Aluno ID %s inválido: %s",
+            linha.get("id"),
+            linha.get("nome"),
+            ", ".join(erros),
+        )
 
-    print(f"\nInseridos no banco: {inserted}")
-    print(f"Inválidos no CSV: {len(invalidos)}")
+    logger.info("Inseridos no banco: %s", inserted)
+    logger.info("Inválidos no CSV: %s", len(invalidos))
 
 if __name__ == "__main__":
     main()            
