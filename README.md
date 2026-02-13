@@ -80,6 +80,8 @@ Se você já tem o `.venv`, ative e instale:
 
 ```bash
 pip install psycopg python-dotenv
+```
+
 (Mais adiante isso será substituído por requirements.txt ou pyproject.toml.)
 
 2) Rodar o pipeline
