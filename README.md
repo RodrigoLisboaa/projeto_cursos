@@ -56,6 +56,8 @@ Próximos passos (planejados):
 
 ```bash
 copy .env.example .env
+```
+
 Ajuste o .env se necessário (principalmente senha e nome do banco).
 
 Exemplo (valores padrão locais):
