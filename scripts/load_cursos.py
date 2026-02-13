@@ -1,11 +1,12 @@
 import csv
 from pathlib import Path
 
+from config import CSV_DIR
 from core.cursos import normalizar_curso, validar_curso
 from db.connection import get_connection
 
 def main() -> None:
-    caminho_csv = Path("data") / "cursos.csv"
+    caminho_csv = Path(CSV_DIR) / "cursos.csv"
     if not caminho_csv.exists():
         raise FileNotFoundError(f"CSV não encontrado: {caminho_csv}")
     
