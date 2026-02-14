@@ -50,7 +50,7 @@ def main() -> None:
 
     for linha, erros in invalidos:
         logger.warning(
-            "Curso ID %s inválido: %s",
+            "Curso ID %s (%s) inválido: %s",
             linha.get("id"),
             linha.get("nome"),
             ", ".join(erros),
