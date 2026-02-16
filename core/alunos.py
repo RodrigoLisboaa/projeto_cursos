@@ -13,6 +13,10 @@ def validar_aluno(linha: dict) -> list[str]:
     if not linha["email"]:
         erros.append("email vazio")
 
+    # nome obrigatório
+    if not linha["nome"]:
+        erros.append("nome vazio")
+
     # idade obrigatória, numérica e >=16
     if not linha["idade"]:
         erros.append("idade vazia")

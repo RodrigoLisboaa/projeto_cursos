@@ -17,6 +17,11 @@ def test_validar_aluno_email_obrigatorio():
     assert "email vazio" in erros
 
 
+def test_validar_aluno_nome_obrigatorio():
+    linha = normalizar_aluno({"id": "1", "nome": "", "email": "a@a.com", "idade": "20"})
+    assert "nome vazio" in validar_aluno(linha)
+
+
 def test_validar_aluno_id_obrigatorio_e_numerico():
     linha = normalizar_aluno({"id": "", "nome": "Ana", "email": "a@a.com", "idade": "20"})
     assert "id vazio" in validar_aluno(linha)
