@@ -2,7 +2,12 @@ from core.alunos import normalizar_aluno, validar_aluno
 
 
 def test_normalizar_aluno_strip_lower_and_collapse_spaces():
-    entrada = {"id": "  1 ", "nome": "  João   Santos  ", "email": "  TEST@EMAIL.COM  ", "idade": " 20 "}
+    entrada = {
+        "id": "  1 ",
+        "nome": "  João   Santos  ",
+        "email": "  TEST@EMAIL.COM  ",
+        "idade": " 20 ",
+    }
     saida = normalizar_aluno(entrada)
 
     assert saida["id"] == "1"

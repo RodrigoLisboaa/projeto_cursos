@@ -2,11 +2,13 @@ from pathlib import Path
 
 from db.connection import get_connection
 
+
 def run_sql_file(conn, filepath: Path) -> None:
     sql = filepath.read_text(encoding="utf-8")
 
     with conn.cursor() as cur:
         cur.execute(sql)
+
 
 def main() -> None:
     sql_dir = Path(__file__).resolve().parent / "sql"
@@ -17,7 +19,7 @@ def main() -> None:
         raise FileNotFoundError(f"Arquivo não encontrado: {reset_file}")
     if not create_file.exists():
         raise FileNotFoundError(f"Arquivo não encontrado: {create_file}")
-    
+
     with get_connection() as conn:
         run_sql_file(conn, reset_file)
         run_sql_file(conn, create_file)
@@ -32,6 +34,7 @@ def main() -> None:
             )
             row = cur.fetchone()
         print("Setup OK. Tabelas:", row)
+
 
 if __name__ == "__main__":
     main()

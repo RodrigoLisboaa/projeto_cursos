@@ -1,12 +1,12 @@
 import csv
 import logging
 from pathlib import Path
-from typing import Callable, Any
-
+from typing import Any, Callable
 
 NormalizeFn = Callable[[dict[str, Any]], dict[str, Any]]
 ValidateFn = Callable[[dict[str, Any]], list[str]]
-InsertFn = Callable[[Any, dict[str, Any]], bool] # cursor, row -> inserted?
+InsertFn = Callable[[Any, dict[str, Any]], bool]  # cursor, row -> inserted?
+
 
 def process_csv(
     csv_path: Path,
@@ -23,7 +23,7 @@ def process_csv(
 
     if not csv_path.exists():
         raise FileNotFoundError(f"CSV não encontrado: {csv_path}")
-    
+
     validos: list[dict[str, Any]] = []
     invalidos: list[tuple[dict[str, Any], list[str]]] = []
 
@@ -53,7 +53,7 @@ def process_csv(
             _format_entity_line(entity_name, linha),
             ", ".join(erros),
         )
-    
+
     if len(invalidos) > max_invalid_logs:
         logger.warning(
             "%s: %s inválidos adicionais não exibidos (limite=%s)",
@@ -61,9 +61,10 @@ def process_csv(
             len(invalidos) - max_invalid_logs,
             max_invalid_logs,
         )
-    
+
     logger.info("%s - Inseridos no banco: %s", entity_name, inserted)
     logger.info("%s - Inválidos no CSV: %s", entity_name, len(invalidos))
+
 
 def _format_entity_line(entity_name: str, linha: dict[str, Any]) -> str:
     """

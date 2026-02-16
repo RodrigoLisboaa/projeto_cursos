@@ -1,10 +1,11 @@
-def normalizar_aluno(linha:dict) -> dict:
+def normalizar_aluno(linha: dict) -> dict:
     return {
         "id": (linha.get("id") or "").strip(),
         "nome": " ".join(((linha.get("nome") or "").strip()).split()),
         "email": ((linha.get("email") or "").strip()).lower(),
         "idade": (linha.get("idade") or "").strip(),
     }
+
 
 def validar_aluno(linha: dict) -> list[str]:
     erros = []
@@ -28,7 +29,7 @@ def validar_aluno(linha: dict) -> list[str]:
         except ValueError:
             erros.append("idade não é número")
 
-    #id obrigatório
+    # id obrigatório
     if not linha["id"]:
         erros.append("id vazio")
     else:

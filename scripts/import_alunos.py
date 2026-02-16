@@ -1,6 +1,8 @@
 import csv
 from pathlib import Path
+
 from core.alunos import normalizar_aluno, validar_aluno
+
 
 def main():
     caminho_csv = Path("data") / "alunos.csv"
@@ -27,7 +29,7 @@ def main():
 
     print(f"\n Total Válidos: {len(validos)}")
     print(f" Total inválidos: {len(invalidos)}")
-    
+
     caminho_invalidos = Path("data") / "alunos_invalidos.csv"
 
     with caminho_invalidos.open(mode="w", encoding="utf-8", newline="") as f:
@@ -36,13 +38,16 @@ def main():
         writer.writeheader()
 
         for linha, erros in invalidos:
-            writer.writerow({
-                "id": linha.get("id"),
-                "nome": linha.get("nome"),
-                "email": linha.get("email"),
-                "idade": linha.get("idade"),
-                "erros": "; ".join(erros),
-            })            
+            writer.writerow(
+                {
+                    "id": linha.get("id"),
+                    "nome": linha.get("nome"),
+                    "email": linha.get("email"),
+                    "idade": linha.get("idade"),
+                    "erros": "; ".join(erros),
+                }
+            )
+
 
 if __name__ == "__main__":
     main()

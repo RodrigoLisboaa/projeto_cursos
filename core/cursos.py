@@ -5,7 +5,8 @@ def normalizar_curso(linha: dict) -> dict:
         "ativo": ((linha.get("ativo") or "").strip()).lower(),
     }
 
-def validar_curso(linha:dict) -> list[str]:
+
+def validar_curso(linha: dict) -> list[str]:
     erros = []
 
     if not linha["id"]:
@@ -15,7 +16,7 @@ def validar_curso(linha:dict) -> list[str]:
             int(linha["id"])
         except ValueError:
             erros.append("id não é número")
-    
+
     if not linha["nome"]:
         erros.append("nome vazio")
 
