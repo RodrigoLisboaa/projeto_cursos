@@ -38,11 +38,15 @@ def process_csv(
                 validos.append(linha)
 
     inserted = 0
+    failed_inserts = 0
+
     with get_connection() as conn:
         with conn.cursor() as cur:
             for row in validos:
                 if insert_row(cur, row):
                     inserted += 1
+                else:
+                    failed_inserts += 1
 
     # Log Inválidos (limitado)
     for i, (linha, erros) in enumerate(invalidos):
@@ -64,6 +68,13 @@ def process_csv(
 
     logger.info("%s - Inseridos no banco: %s", entity_name, inserted)
     logger.info("%s - Inválidos no CSV: %s", entity_name, len(invalidos))
+
+    if failed_inserts:
+        logger.info(
+            "%s - Falhas na inserção (ex: FK/unique): %s",
+            entity_name,
+            failed_inserts,
+        )
 
 
 def _format_entity_line(entity_name: str, linha: dict[str, Any]) -> str:
