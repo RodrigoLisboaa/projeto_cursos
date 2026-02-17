@@ -8,20 +8,18 @@ O objetivo é demonstrar um mini pipeline ETL: leitura de CSV → normalização
 ## Status
 
 - [x] Leitura de CSV (`csv.DictReader`)
-- [x] Normalização de dados (`core/`)
-- [x] Validação de dados (`core/`)
-- [x] Separação entre registros válidos e inválidos (em memória)
+- [x] Normalização e validação (`core/`)
+- [x] Pipeline genérico de carga (`scripts/loader.py`)
+- [x] Logging configurável (`LOG_LEVEL`)
+- [x] Setup de schema via SQL (`python -m scripts.setup_db`)
 - [x] Carga no PostgreSQL (com `ON CONFLICT DO NOTHING`)
-- [x] Execução via módulo (`python -m ...`)
-- [x] Configuração centralizada via env (`config.py`) + `.env.example`
+- [x] Testes com `pytest`
+- [x] Padronização com `ruff` (lint/format)
+- [x] CI com GitHub Actions (ruff + pytest)
+- [x] Docker básico (PostgreSQL via `docker compose`)
 
 Próximos passos (planejados):
-- [ ] Substituir `print()` por `logging` e gerar resumo do processamento
-- [ ] Remover duplicação entre loaders (alunos/cursos) com função genérica
-- [ ] Testes com `pytest` (unitários de normalização/validação + fluxo mínimo)
-- [ ] Padronização de código (ruff + black)
-- [ ] CI básico (GitHub Actions: ruff + pytest)
-- [ ] Docker básico (docker-compose com PostgreSQL)
+- [ ] Export opcional de inválidos (arquivo)
 - [ ] Migrações com Alembic (schema versionado)
 - [ ] Makefile para comandos padrão (`make up`, `make run`, etc.)
 
@@ -36,17 +34,19 @@ Próximos passos (planejados):
 - `db/`  
   Conexão com o PostgreSQL.
 - `scripts/`  
-  Scripts de carga (ETL).
+  Scripts de setup e carga (ETL).
+- `tests/`  
+  Testes de normalização e validação.
 
 ---
 
 ## Requisitos
 
 - Python 3.11+ (recomendado)
-- PostgreSQL rodando localmente (por enquanto)
-- Dependências:
-  - `psycopg` (driver PostgreSQL)
-  - `python-dotenv` (carregar variáveis do `.env`)
+- Docker Desktop (recomendado) **ou** PostgreSQL local
+- Dependências principais:
+  - `psycopg`
+  - `python-dotenv`
 
 ---
 
@@ -58,61 +58,67 @@ Próximos passos (planejados):
 copy .env.example .env
 ```
 
-Ajuste o .env se necessário (principalmente senha e nome do banco).
+2) Ajuste o `.env` se necessário (principalmente `PGPASSWORD` e `PGDATABASE`).
 
-Exemplo (valores padrão locais):
+O projeto lê as variáveis via `config.py`. O `.env` não deve ser commitado (está no `.gitignore`).
 
-CSV_DIR=data
-
-PGHOST=localhost
-PGPORT=5432
-PGDATABASE=mentoria_dev
-PGUSER=postgres
-PGPASSWORD=
-
-## Como rodar (local)
+## Como rodar (Docker - recomendado)
 
 > **Importante:** execute os comandos a partir da **raiz** do projeto.
 
-### 1) Ativar venv e instalar dependências
+### 1) Suba o PostgreSQL (Docker)
 
-Se você já tem o `.venv`, ative e instale:
+```bash
+docker compose up -d
+docker compose ps
+```
+
+### 2) Crie as tabelas e rode o pipeline
+
+⚠️ `scripts.setup_db` executa reset do schema (apaga dados).
+
+```bash
+python -m scripts.setup_db
+python -m scripts.main
+```
+
+### Reset do banco (apaga os dados)
+
+```bash
+docker compose down -v
+docker compose up -d
+python -m scripts.setup_db
+```
+
+## Como rodar (local, sem Docker)
+
+### 1) Instale as dependências
 
 ```bash
 pip install psycopg python-dotenv
 ```
 
-(Mais adiante isso será substituído por requirements.txt ou pyproject.toml.)
+Garanta que o PostgreSQL local está rodando e que o `.env` aponta para ele.
 
-2) Rodar o pipeline
-Executa carga de alunos + cursos:
+### 2) Rode o setup e o pipeline
 
+```bash
+python -m scripts.setup_db
 python -m scripts.main
-Ou rodar individualmente:
+```
 
-python -m scripts.load_alunos
-python -m scripts.load_cursos
-Como funciona (resumo)
+## Como funciona (resumo)
+
 Para cada CSV:
 
-Lê as linhas do arquivo (csv.DictReader)
+1. Lê linhas (`csv.DictReader`)
+2. Normaliza campos (`core/*.py`)
+3. Valida dados (`core/*.py`)
+4. Se válido: insere no PostgreSQL
+5. Se inválido: registra via logging
 
-Normaliza os campos (core/*.py)
+A contagem **Inseridos no banco** considera apenas inserções novas (duplicatas por `id` não entram).
 
-Valida os dados (core/*.py)
+## Licença
 
-Se válido: adiciona na lista de inserção
-
-Se inválido: registra na lista de inválidos
-
-Insere no PostgreSQL usando ON CONFLICT (id) DO NOTHING
-
-Observações
-A contagem "Inseridos no banco: X" considera apenas inserções novas.
-
-Se você rodar o script novamente, registros duplicados por id não serão inseridos, e a contagem pode ficar 0.
-
-No estado atual, inválidos são exibidos no console. Em breve será substituído por logging e export opcional.
-
-Licença
 Projeto de estudo/portfólio.
