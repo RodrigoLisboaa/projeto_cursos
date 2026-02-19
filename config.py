@@ -17,4 +17,9 @@ DATABASE_URL = os.getenv(
     f"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}",
 )
 
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "SQLALCHEMY_DATABASE_URL",
+    DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1),
+)
+
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
