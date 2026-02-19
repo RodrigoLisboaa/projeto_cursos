@@ -5,11 +5,12 @@ Revises:
 Create Date: 2026-02-19 14:03:41.838468
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "d357e8323f9a"
@@ -26,10 +27,10 @@ def upgrade() -> None:
         sa.Column("nome", sa.String(length=120), nullable=False),
         sa.Column("email", sa.String(length=150), nullable=False, unique=True),
         sa.Column("idade", sa.Integer(), nullable=False),
-        sa.CheckConstraint("idade >= 16", name="ck_alunos_idade_min"),        
+        sa.CheckConstraint("idade >= 16", name="ck_alunos_idade_min"),
     )
 
-    #c ursos
+    # cursos
     op.create_table(
         "cursos",
         sa.Column("id", sa.Integer(), primary_key=True, autoincrement=False),
