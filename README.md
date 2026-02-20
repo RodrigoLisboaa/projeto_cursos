@@ -11,17 +11,17 @@ O objetivo é demonstrar um mini pipeline ETL: leitura de CSV → normalização
 - [x] Normalização e validação (`core/`)
 - [x] Pipeline genérico de carga (`scripts/loader.py`)
 - [x] Logging configurável (`LOG_LEVEL`)
-- [x] Setup de schema via SQL (`python -m scripts.setup_db`)
+- [x] Migrações com Alembic (schema versionado)
 - [x] Carga no PostgreSQL (com `ON CONFLICT DO NOTHING`)
 - [x] Testes com `pytest`
 - [x] Padronização com `ruff` (lint/format)
 - [x] CI com GitHub Actions (ruff + pytest)
 - [x] Docker básico (PostgreSQL via `docker compose`)
+- [x] Task runner (PowerShell) (`tasks.ps1`)
 
 Próximos passos (planejados):
 - [ ] Export opcional de inválidos (arquivo)
-- [ ] Migrações com Alembic (schema versionado)
-- [ ] Makefile para comandos padrão (`make up`, `make run`, etc.)
+- [ ] Pequenos ajustes de usabilidade (atalhos no `tasks.ps1` / documentação)
 
 ---
 
@@ -34,7 +34,9 @@ Próximos passos (planejados):
 - `db/`  
   Conexão com o PostgreSQL.
 - `scripts/`  
-  Scripts de setup e carga (ETL).
+  Scripts de carga (ETL).
+- `alembic/`  
+  Migrações e versionamento de schema.
 - `tests/`  
   Testes de normalização e validação.
 
@@ -43,10 +45,13 @@ Próximos passos (planejados):
 ## Requisitos
 
 - Python 3.11+ (recomendado)
-- Docker Desktop (recomendado) **ou** PostgreSQL local
+- Docker Desktop (recomendado) — para rodar o PostgreSQL
+- Opcional: PostgreSQL local (fluxo alternativo / best effort)
 - Dependências principais:
-  - `psycopg`
+  - `psycopg[binary]`
   - `python-dotenv`
+
+Dependências completas em `requirements.txt`.
 
 ---
 
@@ -58,7 +63,7 @@ Próximos passos (planejados):
 copy .env.example .env
 ```
 
-2) Ajuste o `.env` se necessário (principalmente `PGPASSWORD` e `PGDATABASE`).
+2) Ajuste o `.env` se necessário (principalmente `PGPASSWORD`, `PGDATABASE` e `PGPORT`).
 
 O projeto lê as variáveis via `config.py`. O `.env` não deve ser commitado (está no `.gitignore`).
 
@@ -69,41 +74,52 @@ O projeto lê as variáveis via `config.py`. O `.env` não deve ser commitado (e
 ### 1) Suba o PostgreSQL (Docker)
 
 ```bash
-docker compose up -d
-docker compose ps
+.\tasks.ps1 up
+.\tasks.ps1 ps
 ```
 
-### 2) Crie as tabelas e rode o pipeline
-
-⚠️ `scripts.setup_db` executa reset do schema (apaga dados).
+### 2) Aplique as migrações e rode o pipeline
 
 ```bash
-python -m scripts.setup_db
-python -m scripts.main
+.\tasks.ps1 migrate
+.\tasks.ps1 run
 ```
+
+> **Dica (primeira execução, banco vazio):** você pode rodar `.\tasks.ps1 reset-db` (zera o volume e já aplica as migrações).
+> **Uso normal:** prefira `.\tasks.ps1 migrate`, porque não apaga dados.
 
 ### Reset do banco (apaga os dados)
 
+⚠️ `.\tasks.ps1 reset-db` remove o volume do Postgres (`docker compose down -v`) e apaga todos os dados.
+
 ```bash
-docker compose down -v
-docker compose up -d
-python -m scripts.setup_db
+.\tasks.ps1 reset-db
+.\tasks.ps1 run
 ```
 
 ## Como rodar (local, sem Docker)
 
+> Caminho alternativo (best effort). O fluxo recomendado é via Docker.
+
+## Comandos úteis
+
+```bash
+.\tasks.ps1 check
+.\tasks.ps1 logs
+```
+
 ### 1) Instale as dependências
 
 ```bash
-pip install psycopg python-dotenv
+pip install -r requirements.txt
 ```
 
-Garanta que o PostgreSQL local está rodando e que o `.env` aponta para ele.
+### 2) Garanta que o PostgreSQL local está rodando e que o `.env` aponta para ele.
 
-### 2) Rode o setup e o pipeline
+### 3) Rode as migrações e o pipeline:
 
 ```bash
-python -m scripts.setup_db
+alembic upgrade head
 python -m scripts.main
 ```
 
