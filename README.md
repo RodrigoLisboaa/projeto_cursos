@@ -3,6 +3,13 @@
 Projeto de portfólio focado em **Python + validação de dados + carga em PostgreSQL**.  
 O objetivo é demonstrar um mini pipeline ETL: leitura de CSV → normalização/validação → inserção no banco.
 
+## Highlights (o que este projeto demonstra)
+
+- **Reprodutibilidade:** Docker + Postgres com reset e migração em 1 comando (`.\tasks.ps1 reset-db`)
+- **Schema versionado:** migrações com **Alembic** (`alembic upgrade head`)
+- **Qualidade:** `ruff` (lint/format) + `pytest` + **CI** no GitHub Actions
+- **Operação:** logging configurável + **export opcional de inválidos** (CSV/JSON)
+
 ---
 
 ## Status
@@ -19,6 +26,11 @@ O objetivo é demonstrar um mini pipeline ETL: leitura de CSV → normalização
 - [x] Docker básico (PostgreSQL via `docker compose`)
 - [x] Task runner (PowerShell) (`tasks.ps1`)
 - [x] Export opcional de inválidos (CSV/JSON)
+
+Próximos passos (planejados):
+- [ ] Inserção em lote (bulk insert) para cenários com grandes volumes (ex.: `COPY`/batch)
+- [ ] Task runner multiplataforma (ex.: `tasks.py`) para Mac/Linux
+- [ ] Melhorias pequenas de usabilidade/documentação
 
 ---
 
@@ -94,16 +106,34 @@ O projeto lê as variáveis via `config.py`. O `.env` não deve ser commitado (e
 .\tasks.ps1 run
 ```
 
-## Como rodar (local, sem Docker)
-
-> Caminho alternativo (best effort). O fluxo recomendado é via Docker.
-
-## Comandos úteis
+### Comandos úteis
 
 ```bash
 .\tasks.ps1 check
 .\tasks.ps1 logs
 ```
+
+## Comandos equivalentes (Mac/Linux) — sem `tasks.ps1`
+
+```bash
+docker compose up -d
+alembic upgrade head
+python -m scripts.main
+ruff check . && pytest -q
+```
+
+### Para reset completo (apaga dados):
+
+```bash
+docker compose down -v
+docker compose up -d
+alembic upgrade head
+```
+
+## Como rodar (local, sem Docker)
+
+> Caminho alternativo (best effort). O fluxo recomendado é via Docker.
+
 
 ### 1) Instale as dependências
 
@@ -142,6 +172,11 @@ Se quiser exportar todos os inválidos para arquivo, habilite no `.env`:
 - `INVALIDS_FORMAT=csv` (ou `json`)
 
 Ao rodar `.\tasks.ps1 run`, os arquivos serão gerados em `out/invalids/`.
+
+## Observação sobre performance (inserção em lote)
+
+Este projeto insere registros válidos `linha a linha` por simplicidade (volume pequeno).
+Em cenários de produção com grandes volumes, a estratégia recomendada seria `bulk insert` (ex.: `COPY` ou batches), reduzindo overhead de round-trips ao banco.
 
 ## Licença
 
