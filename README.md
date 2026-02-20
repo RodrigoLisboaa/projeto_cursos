@@ -18,10 +18,7 @@ O objetivo é demonstrar um mini pipeline ETL: leitura de CSV → normalização
 - [x] CI com GitHub Actions (ruff + pytest)
 - [x] Docker básico (PostgreSQL via `docker compose`)
 - [x] Task runner (PowerShell) (`tasks.ps1`)
-
-Próximos passos (planejados):
-- [ ] Export opcional de inválidos (arquivo)
-- [ ] Pequenos ajustes de usabilidade (atalhos no `tasks.ps1` / documentação)
+- [x] Export opcional de inválidos (CSV/JSON)
 
 ---
 
