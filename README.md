@@ -1,7 +1,6 @@
-# Projeto Cursos (CSV → PostgreSQL)
+# Python ETL Pipeline: CSV → PostgreSQL
 
-Projeto de portfólio focado em **Python + validação de dados + carga em PostgreSQL**.  
-O objetivo é demonstrar um mini pipeline ETL: leitura de CSV → normalização/validação → inserção no banco.
+Pipeline de ingestão focado em boas práticas: ambiente reprodutível com Docker, schema versionado com Alembic, qualidade garantida com ruff/pytest + CI. Inclui validação/normalização e export opcional de registros inválidos.
 
 ## Highlights (o que este projeto demonstra)
 
@@ -180,4 +179,4 @@ Em cenários de produção com grandes volumes, a estratégia recomendada seria 
 
 ## Licença
 
-Projeto de estudo/portfólio.
+Projeto de portfólio.
