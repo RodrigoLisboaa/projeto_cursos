@@ -1,5 +1,9 @@
 import csv
+import json
 import logging
+import os
+import unicodedata
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
 
@@ -48,6 +52,9 @@ def process_csv(
                 else:
                     failed_inserts += 1
 
+    # Export opcional de inválidos (antes dos logs, pra não "perder" nada)
+    export_path = _maybe_export_invalids(entity_name, csv_path, invalidos, logger)
+
     # Log Inválidos (limitado)
     for i, (linha, erros) in enumerate(invalidos):
         if i >= max_invalid_logs:
@@ -76,6 +83,9 @@ def process_csv(
             failed_inserts,
         )
 
+    if export_path is not None:
+        logger.info("%s - Inválidos exportados em: %s", entity_name, export_path)
+
 
 def _format_entity_line(entity_name: str, linha: dict[str, Any]) -> str:
     """
@@ -88,3 +98,94 @@ def _format_entity_line(entity_name: str, linha: dict[str, Any]) -> str:
     if id_ is not None:
         return f"{entity_name} ID {id_}"
     return f"{entity_name}"
+
+
+def _slug(text: str) -> str:
+    """
+    Normaliza para um identificador seguro (ASCII), removendo acentos.
+    Ex: 'Matrícula' -> 'matricula'
+    """
+    text = text.strip().lower().replace(" ", "_")
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    return text
+
+
+def _maybe_export_invalids(
+    entity_name: str,
+    csv_path: Path,
+    invalidos: list[tuple[dict[str, Any], list[str]]],
+    logger: logging.Logger,
+) -> Path | None:
+    """
+    Exporta inválidos se EXPORT_INVALIDS=1.
+    Config via env:
+      - EXPORT_INVALIDS: 0/1 (default 0)
+      - INVALIDS_DIR: diretório de saída (default out/invalids)
+      - INVALIDS_FORMAT: csv|json (default csv)
+    """
+    export_invalids = os.getenv("EXPORT_INVALIDS", "0").strip() == "1"
+    if not export_invalids:
+        return None
+
+    if not invalidos:
+        return None
+
+    out_dir = Path(os.getenv("INVALIDS_DIR", "out/invalids"))
+    fmt = os.getenv("INVALIDS_FORMAT", "csv").strip().lower()
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_entity = _slug(entity_name)
+    safe_input = _slug(csv_path.stem)
+
+    if fmt not in {"csv", "json"}:
+        logger.warning("INVALIDS_FORMAT inválido (%s). Usando csv.", fmt)
+        fmt = "csv"
+
+    out_path = out_dir / f"invalidos_{safe_entity}_{safe_input}_{timestamp}.{fmt}"
+
+    if fmt == "json":
+        payload = [
+            {"row": row, "errors": errors, "entity": entity_name, "source": str(csv_path)}
+            for row, errors in invalidos
+        ]
+        out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        return out_path
+
+    # CSV: coluna errors + união das chaves encontradas nos rows
+    keys: set[str] = set()
+    for row, _errors in invalidos:
+        keys.update(row.keys())
+
+    # Ordem estável: id/nome/email/idade/aluno_id/curso_id/data_matricula primeiro, resto depois
+    preferred = [
+        "id",
+        "nome",
+        "email",
+        "idade",
+        "aluno_id",
+        "curso_id",
+        "data_matricula",
+    ]
+    ordered_keys = [k for k in preferred if k in keys] + sorted(
+        k for k in keys if k not in preferred
+    )
+
+    fieldnames = ["entity", "source", "errors", *ordered_keys]
+
+    with out_path.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row, errors in invalidos:
+            record: dict[str, Any] = {
+                "entity": entity_name,
+                "source": str(csv_path),
+                "errors": " | ".join(errors),
+            }
+            for k in ordered_keys:
+                record[k] = row.get(k, "")
+            writer.writerow(record)
+
+    return out_path
