@@ -135,6 +135,17 @@ Para cada CSV:
 
 A contagem **Inseridos no banco** considera apenas inserções novas (duplicatas por `id` não entram).
 
+## Export opcional de inválidos
+
+Por padrão, inválidos são apenas registrados via logging (limitado no console).
+Se quiser exportar todos os inválidos para arquivo, habilite no `.env`:
+
+- `EXPORT_INVALIDS=1`
+- `INVALIDS_DIR=out/invalids`
+- `INVALIDS_FORMAT=csv` (ou `json`)
+
+Ao rodar `.\tasks.ps1 run`, os arquivos serão gerados em `out/invalids/`.
+
 ## Licença
 
 Projeto de estudo/portfólio.
