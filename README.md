@@ -4,7 +4,7 @@ Pipeline de ingestão focado em boas práticas: ambiente reprodutível com Docke
 
 ## Highlights (o que este projeto demonstra)
 
-- **Reprodutibilidade:** Docker + Postgres com reset e migração em 1 comando (`.\tasks.ps1 reset-db`)
+- **Reprodutibilidade:** Docker + Postgres com reset e migração em 1 comando (`python tasks.py reset-db`)
 - **Schema versionado:** migrações com **Alembic** (`alembic upgrade head`)
 - **Qualidade:** `ruff` (lint/format) + `pytest` + **CI** no GitHub Actions
 - **Operação:** logging configurável + **export opcional de inválidos** (CSV/JSON)
@@ -23,12 +23,11 @@ Pipeline de ingestão focado em boas práticas: ambiente reprodutível com Docke
 - [x] Padronização com `ruff` (lint/format)
 - [x] CI com GitHub Actions (ruff + pytest)
 - [x] Docker básico (PostgreSQL via `docker compose`)
-- [x] Task runner (PowerShell) (`tasks.ps1`)
+- [x] Task runner multiplataforma (`\tasks.py`)
 - [x] Export opcional de inválidos (CSV/JSON)
 
 Próximos passos (planejados):
 - [ ] Inserção em lote (bulk insert) para cenários com grandes volumes (ex.: `COPY`/batch)
-- [ ] Task runner multiplataforma (ex.: `tasks.py`) para Mac/Linux
 - [ ] Melhorias pequenas de usabilidade/documentação
 
 ---
@@ -67,9 +66,9 @@ Dependências completas em `requirements.txt`.
 
 1) Copie o arquivo de exemplo:
 
-```bash
-copy .env.example .env
-```
+
+Copie `.env.example` para `.env`.
+
 
 2) Ajuste o `.env` se necessário (principalmente `PGPASSWORD`, `PGDATABASE` e `PGPORT`).
 
@@ -82,51 +81,34 @@ O projeto lê as variáveis via `config.py`. O `.env` não deve ser commitado (e
 ### 1) Suba o PostgreSQL (Docker)
 
 ```bash
-.\tasks.ps1 up
-.\tasks.ps1 ps
+python tasks.py up
+python tasks.py ps
 ```
 
 ### 2) Aplique as migrações e rode o pipeline
 
 ```bash
-.\tasks.ps1 migrate
-.\tasks.ps1 run
+python tasks.py migrate
+python tasks.py run
 ```
 
-> **Dica (primeira execução, banco vazio):** você pode rodar `.\tasks.ps1 reset-db` (zera o volume e já aplica as migrações).
-> **Uso normal:** prefira `.\tasks.ps1 migrate`, porque não apaga dados.
+> **Dica (primeira execução, banco vazio):** você pode rodar `python tasks.py reset-db` (zera o volume e já aplica as migrações).
+> **Uso normal:** prefira `python tasks.py migrate`, porque não apaga dados.
 
 ### Reset do banco (apaga os dados)
 
-⚠️ `.\tasks.ps1 reset-db` remove o volume do Postgres (`docker compose down -v`) e apaga todos os dados.
+⚠️ `python tasks.py reset-db` remove o volume do Postgres (`docker compose down -v`) e apaga todos os dados.
 
 ```bash
-.\tasks.ps1 reset-db
-.\tasks.ps1 run
+python tasks.py reset-db
+python tasks.py run
 ```
 
 ### Comandos úteis
 
 ```bash
-.\tasks.ps1 check
-.\tasks.ps1 logs
-```
-
-## Comandos equivalentes (Mac/Linux) — sem `tasks.ps1`
-
-```bash
-docker compose up -d
-alembic upgrade head
-python -m scripts.main
-ruff check . && pytest -q
-```
-
-### Para reset completo (apaga dados):
-
-```bash
-docker compose down -v
-docker compose up -d
-alembic upgrade head
+python tasks.py check
+python tasks.py logs
 ```
 
 ## Como rodar (local, sem Docker)
@@ -145,8 +127,8 @@ pip install -r requirements.txt
 ### 3) Rode as migrações e o pipeline:
 
 ```bash
-alembic upgrade head
-python -m scripts.main
+python tasks.py migrate
+python tasks.py run
 ```
 
 ## Como funciona (resumo)
@@ -170,7 +152,7 @@ Se quiser exportar todos os inválidos para arquivo, habilite no `.env`:
 - `INVALIDS_DIR=out/invalids`
 - `INVALIDS_FORMAT=csv` (ou `json`)
 
-Ao rodar `.\tasks.ps1 run`, os arquivos serão gerados em `out/invalids/`.
+Ao rodar `python tasks.py run`, os arquivos serão gerados em `out/invalids/`.
 
 ## Observação sobre performance (inserção em lote)
 
